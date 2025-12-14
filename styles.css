@@ -1,0 +1,241 @@
+:root {
+  --vh: 1vh;
+  --pattern-green: 0, 255, 128;
+  --pattern-pink: 255, 0, 128;
+}
+
+/* Reset + helpers */
+html, body { height: 100%; margin: 0; padding: 0; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* App container (dark base) */
+.app {
+  min-height: calc(var(--vh) * 100);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #ffffff;
+  background-color: #101014; /* base dark canvas */
+  overflow: hidden;
+}
+
+/* ---------- Pattern layer (converted/strengthened) ---------- */
+.pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(45deg, rgba(var(--pattern-green),0.14) 0, rgba(var(--pattern-green),0.14) 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(-45deg, rgba(var(--pattern-pink),0.16) 0, rgba(var(--pattern-pink),0.16) 1px, transparent 1px, transparent 30px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 80px),
+    radial-gradient(circle at 60% 40%, rgba(var(--pattern-green),0.06) 0, transparent 60%);
+  background-size: 80px 80px, 40px 40px, 60px 60px, 80px 80px, 100% 100%;
+  background-position: 0 0, 0 0, 0 0, 40px 40px, center;
+  background-repeat: repeat;
+  opacity: 1;
+  transform: translateZ(0);
+}
+
+/* Ensure important UI sits above the pattern */
+.page,
+.loader-container,
+.card {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Loader overlay (centered) ---------- */
+.loader-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: max(calc(var(--vh) * 100), 100vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  background: linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.40));
+  transition: opacity 220ms ease;
+  pointer-events: auto;
+}
+.loader-container.hidden { opacity: 0; pointer-events: none; }
+
+.loader-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 12px; }
+
+/* ---------- Present visuals (gift) ---------- */
+.gift-box { position: relative; width: 80px; height: 80px; animation: bounce 0.6s ease-in-out infinite; will-change: transform; }
+@keyframes bounce { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-28px) scale(1.05); } }
+
+.box-base {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: linear-gradient(180deg,#631616,#b12424);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+}
+.box-lid {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  width: 60px;
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(180deg,#b12424,#7a0f0f);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+  animation: lidFloat 0.6s ease-in-out infinite;
+}
+@keyframes lidFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+.box-lid::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  width: 8px;
+  height: 20px;
+  background: #3ccf78;
+  border-radius: 2px;
+}
+
+.box-ribbon-v, .box-ribbon-h, .bow-left, .bow-right, .bow-center { background: #3ccf78; }
+.box-ribbon-v { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 8px; height: 60px; border-radius: 3px; }
+.box-ribbon-h { position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 60px; height: 8px; border-radius: 6px; }
+
+.bow { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 40px; height: 20px; }
+.bow-left, .bow-right { position: absolute; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border-radius: 50% 50% 50% 0; }
+.bow-left { left: 0; transform: translateY(-50%) rotate(-135deg); }
+.bow-right { right: 0; transform: translateY(-50%) rotate(45deg); }
+.bow-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 10px; height: 10px; border-radius: 50%; }
+
+/* loader text */
+.loader-text { color: rgba(255,255,255,0.96); font-size: 14px; text-align: center; }
+
+/* ---------- Wallet / Card (size increase) ----------
+   Increased max width so wallet is visually larger on larger screens
+   while keeping mobile-friendly breakpoints.
+*/
+.wallet { width: 100%; z-index: 1300; }
+.wallet.hidden { display: none; }
+
+/* Make the card wider on larger screens but fluid on mobile.
+   Note: max-width increased to 640px; on small screens card remains full-width.
+*/
+.card {
+  width: 100%;
+  max-width: 640px;        /* increased from 420 to 640 for larger display */
+  border-radius: 24px;
+  padding: 40px;           /* slightly larger padding for breathing room */
+  background: rgba(8,8,10,0.46); /* translucent */
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  backdrop-filter: blur(16px) saturate(1.06);
+  -webkit-backdrop-filter: blur(16px) saturate(1.06);
+  color: #fff;
+  position: relative;
+  margin: 0 12px; /* ensure spacing from screen edges on very small devices */
+}
+.card::after { content: ""; position: absolute; inset: 0; border-radius: 24px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02); pointer-events: none; }
+
+/* Slight adjustments to internal spacing to match larger card */
+.title { text-align: center; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; margin-bottom: 14px; font-weight: 600; }
+.balance { text-align: center; font-size: 64px; font-weight: 700; margin: 14px 0; letter-spacing: -1px; background: linear-gradient(135deg,#fff,#dcdcdc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.label { text-align: center; opacity: 0.9; margin-bottom: 36px; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.95); }
+
+.divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent); margin: 36px 0; }
+.section-title {
+  font-size: 14px;
+  opacity: 0.78;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  text-align: center; /* keep the title centered */
+}
+
+transactions-container { max-height: 520px; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
+.transactions-container { max-height: 520px; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
+
+/* Revert items to left-aligned while keeping the title centered.
+   Use standard two-column flex (label left, amount right).
+*/
+.tx {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* label left, amount right */
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 14px;
+  transition: transform 0.12s ease;
+  min-height: 54px;
+  box-sizing: border-box;
+}
+
+.tx-item {
+  flex: 1;
+  font-weight: 600;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.2;
+  text-align: left; /* left align history items again */
+  word-break: break-word;
+}
+
+.tx-amount {
+  margin-left: 18px;
+  white-space: nowrap;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: inherit;
+}
+
+.positive { color: #3ccf78; }
+.negative { color: #ff8b8b; }
+
+.footer { text-align: center; margin-top: 36px; font-size: 13px; opacity: 0.78; line-height: 1.6; color: rgba(255,255,255,0.9); }
+
+.loading-state { text-align: center; opacity: 0.82; padding: 48px 0; font-size: 15px; }
+.loading-spinner { display: inline-block; width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.12); border-top-color: rgba(255,255,255,0.75); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Responsive rules (keep mobile-first friendly) ---------- */
+@media (max-width: 720px) {
+  .card {
+    max-width: 520px; /* intermediate size on medium devices */
+    padding: 36px;
+    border-radius: 22px;
+  }
+  .balance { font-size: 56px; }
+  .transactions-container { max-height: 420px; }
+}
+
+@media (max-width: 420px) {
+  .card {
+    max-width: 100%;
+    padding: 20px;    /* reduce padding for small screens */
+    border-radius: 18px;
+    margin: 0 10px;
+  }
+  .title { font-size: 11px; margin-bottom: 10px; }
+  .balance { font-size: 44px; }
+  .label { font-size: 13px; margin-bottom: 20px; }
+  .divider { margin: 24px 0; }
+  .transactions-container { max-height: 360px; }
+  .tx { padding: 12px 14px; margin-bottom: 8px; font-size: 14px; border-radius: 12px; }
+  .loading-state { padding: 34px 0; font-size: 14px; }
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .gift-box, .box-lid, .tx, .wallet { animation: none !important; transition: none !important; }
+}
