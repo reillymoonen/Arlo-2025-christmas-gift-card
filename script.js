@@ -11,6 +11,7 @@
   const txContainer = document.getElementById('transactions');
   const loader = document.getElementById('loader');
   const wallet = document.getElementById('wallet');
+  // Kept the minimum load time so the reload doesn't flash too quickly on screen
   const MIN_LOADER_MS = 1200;
 
   function formatMoney(n) { return '$' + Number(n || 0).toFixed(2); }
@@ -74,10 +75,14 @@
         return resp.json();
       })
       .then(data => {
+        // Validate that we actually got data. If data is null/undefined, throw error to trigger reload.
+        if (!data) throw new Error('Empty data received');
+
         data.balance = Number(data.balance) || 0;
         data.transactions = Array.isArray(data.transactions) ? data.transactions : [];
         renderTransactions(data);
 
+        // SUCCESS: Calculate elapsed time and reveal the wallet
         const elapsed = Date.now() - start;
         const wait = Math.max(0, MIN_LOADER_MS - elapsed);
         setTimeout(() => {
@@ -88,15 +93,16 @@
         }, wait);
       })
       .catch(err => {
-        console.error('Data load error', err);
+        console.error('Data load error, refreshing...', err);
+        
+        // FAILURE: Calculate elapsed time to ensure smooth animation loop
         const elapsed = Date.now() - start;
         const wait = Math.max(0, MIN_LOADER_MS - elapsed);
+        
+        // Wait for the animation to finish a cycle, then reload the page.
+        // The loader remains visible, so this happens in the "background".
         setTimeout(() => {
-          txContainer.innerHTML = '<div class="error-state">Unable to load transactions<br>Please try again later</div>';
-          loader.classList.add('hidden');
-          loader.setAttribute('aria-busy', 'false');
-          wallet.classList.remove('hidden');
-          wallet.setAttribute('aria-hidden', 'false');
+          window.location.reload();
         }, wait);
       });
   })();
